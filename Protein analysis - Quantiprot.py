@@ -1,3 +1,6 @@
+# For sequence data stored in .csv file
+# Quantiprot has function to analyze sequence data in fasta file
+
 import os
 import re
 import pandas as pd
