@@ -1,4 +1,5 @@
-# This is for a large dataset and protein ids and sequences stored in csv file (fasta file can be analyzed directly)
+# This is for a large dataset and protein ids and sequences stored in csv file (fasta file can be analyzed directly) 
+# Other libraries needed: muscle, libomp
 
 # Pipline Phylogeny + ML
 
@@ -56,10 +57,10 @@ def check_fasta_format(fasta_file):
 
 
 # Function to run MUSCLE for multiple sequence alignment
-def run_muscle(input_fasta, output_fasta, muscle_path="/Applications/anaconda3/pkgs/muscle-5.3-h28ef24b_1/bin/muscle"):
+def run_muscle(input_fasta, output_fasta, muscle_path="/Applications/anaconda3/muscle-5.3-h28ef24b_1/bin/muscle"): # Replace the path of muscle file in your computer
     try:
         env = os.environ.copy()
-        env['DYLD_LIBRARY_PATH'] = '/Applications/anaconda3/lib/python3.12/site-packages/torch/lib'  # Or use the path that works
+        env['DYLD_LIBRARY_PATH'] = '/Applications/anaconda3/lib'  # the path of libomp.dylib in your computer (libomp need to be installed)
         subprocess.run([muscle_path, "-align", input_fasta, "-output", output_fasta], check=True, env=env)
     except FileNotFoundError:
         print(f"[ERROR] MUSCLE is not found at '{muscle_path}'. Please ensure MUSCLE is installed and available in the PATH.")
@@ -142,9 +143,9 @@ def main(csv_file, id_column, sequence_column, label_mapping_file=None):
 
     if label_mapping_file:
         label_df = pd.read_csv(label_mapping_file)  # columns: ID, Label
-        merged = features_df.merge(label_df, on="KEGG_ID")
-        X = merged.drop(["KEGG_ID", "Org_name"], axis=1)
-        y = merged["Org_name"]
+        merged = features_df.merge(label_df, on="ID")
+        X = merged.drop(["ID", "Label"], axis=1)
+        y = merged["Label"]
         print("[5] Training ML model...")
         train_classifier(X, y)
 
@@ -157,8 +158,8 @@ def main(csv_file, id_column, sequence_column, label_mapping_file=None):
 
 if __name__ == "__main__":
     # Provide your CSV file with protein sequences and IDs, and (optional) a CSV with labels
-    csv_path = "/Users/winniehsiung/Desktop/Data 2024/Kinoshita Lab/Project/GlyCosmos/Plant Garden update/NCBI/Gene analysis/gene_Viridiplantae_glyco_data merging_0409_protein sequence modified.csv"
-    id_col = "GeneID"
-    seq_col = "Protein_Sequence"
-    label_csv = "/Users/winniehsiung/Desktop/Data 2024/Kinoshita Lab/Project/GlyCosmos/Plant Garden update/NCBI/Gene analysis/gene_Viridiplantae_glyco_data merging_0409_protein sequence modified.csv"  # Optional: CSV with columns "ID", "Label"
+    csv_path = "/Users/protein sequence modified.csv" # Replace with your csv file containing protein ids and sequences
+    id_col = "GeneID" # The column name of ids
+    seq_col = "Protein_Sequence" # The column of protein sequences
+    label_csv = "/Users/protein sequence label.csv"  # Optional: CSV with columns "ID", "Label"
     main(csv_path, id_col, seq_col, label_csv)
